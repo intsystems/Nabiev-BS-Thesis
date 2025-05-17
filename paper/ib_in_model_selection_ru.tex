@@ -1,0 +1,87 @@
+\documentclass{article}
+\usepackage{arxiv}
+
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{bm}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{wrapfig}
+\usepackage{doi}
+\usepackage{mathtools}
+\usepackage[dvipsnames]{xcolor}
+
+\title{Выбор предсказательной модели в режиме
+многозадачного обучения с применением методов
+символьной регрессии}
+
+\author{
+    Набиев Мухаммадшариф \\
+    Кафедра интеллектуальных систем\\
+    МФТИ\\
+    \texttt{nabiev.mf@phystech.edu} \\
+    \And
+    Бахтеев Олег \\
+    Кафедра интеллектуальных систем\\
+    МФТИ\\
+    \texttt{} \\
+}
+\date{}
+
+\renewcommand{\shorttitle}{Выбор субоптимальной архитектуры модели в режиме многозадачного обучения с примененимем методов символьного программирования}
+
+\hypersetup{
+pdftitle={Inductive bias in model selection},
+pdfsubject={q-bio.NC, q-bio.QM},
+pdfauthor={Muhammadsharif, Oleg Bakhteev},
+pdfkeywords={model selection, evolutionary algorithm},
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Концепция индуктивного смещения является фундаментальным принципом в области машинного обучения, заключающим в себе основные допущения, лежащие в основе методологии, используемой конкретной моделью в ее прогнозных усилиях, выходящих за рамки явно наблюдаемых данных.
+% Inductive bias играет ключевую роль для обобщения модели, так как разнородные данные имеют свои уникальные отличительные черты, которые отличают одни данные от других. В данной работе мы предлагаем автоматизированный подход к выявлению inductive bias в наборе данных, используя модифицированную версию AutoML-Zero. AutoML-Zero - эволюционный алгоритм, который автоматически проектирует модели для решения задачи на заданных данных. Мы предлагаем следующие модификации \textcolor{red}{need to write more}
+
+\end{abstract}
+
+\keywords{model selection \and evolutionary algorithm}
+
+\section{Введение} 
+Inductive bias является фундаментальной концепцией в машинном обучении, определяющей предположения, которые модель делает для обобщения данных за пределами наблюдаемых примеров.[\textcolor{red}{need to ref papers}] 
+
+
+Сфера машинного обучения в последние годы претерпела значительные изменения, вызванные развитием сложных моделей и алгоритмов, предназначенных для решения самых разнообразных задач. Однако проектирование и оптимизация таких моделей вручную зачастую требуют значительных усилий и времени, что стимулирует рост автоматизированных систем машинного обучения (AutoML). Однако автоматический поиск модели в все еще требует человеческого вмешательства при инициализации пространства поиска или указании заранее созданных шаблонов. Недавняя статья\citep{automl-zero} описывает подход, который требует значительно меньшей настройки. Алгоритм собирает модель из математических операций для решения задач. Такой подход не накладывает никакие ограничения на структуру модели.
+
+TODO
+
+С помощью модели AutoML-Zero сделали autobert\citep{autobert} и automl4robotics\citep{automl4robots}
+    
+
+\section{Постановка задачи}
+
+\section{Описание модели} 
+
+\section{Вычислительный эксперимент}
+    
+    \subsection{Данные}
+  
+    \subsection{Эксперимент}
+
+    \subsection{Результаты эксперимента}
+
+\section{Заключение}
+
+\bibliographystyle{plain}
+\bibliography{ib_in_model_selection}
+
+\end{document}
