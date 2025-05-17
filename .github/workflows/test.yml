@@ -1,0 +1,64 @@
+name: test
+on:
+  workflow_dispatch:
+  # uncomment to make it runnable after each push into master
+  #push:
+  #  branches: [ master ]
+  #pull_request:
+  #  branches: [ master ]
+  
+jobs:
+  pytest:
+    name: pytest
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: [3.10]
+        
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.10"
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        
+      - name: Install PyTest
+        run: |
+          sudo pip install -U "pytest>=7.2.0" "pytest-cov>=4.0.0"
+        
+      - name: Install Dependencies
+        run: |    
+          sudo pip install -U -r src/requirements.txt
+          cd src; sudo pip install .
+          
+      - name: Testing
+        run: |
+          PYTHONPATH=src/ sudo python -m pytest tests/ --cov=mylib --cov-report=xml
+      
+      - name: Generate coverage badge
+        run: |
+          python src/badge_generator.py
+
+      - name: Check for changes in coverage badge
+        id: check_changes
+        run: |
+          if git diff --exit-code -- coverage-badge.svg; then
+            echo "No changes in coverage badge"
+            echo "::set-output name=changes::false"
+          else
+            echo "Changes detected in coverage badge"
+            echo "::set-output name=changes::true"
+          fi
+
+      - name: Commit coverage badge
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add coverage-badge.svg
+          git commit -m "Update coverage badge"
+          git push
+
