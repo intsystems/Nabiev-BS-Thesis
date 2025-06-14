@@ -6,7 +6,6 @@ import random
 from copy import deepcopy
 from multiprocessing import Pool
 import os
-from tqdm.notebook import tqdm
 import time
 
 from deap import base, creator, tools
@@ -23,7 +22,6 @@ DEFAULT_OPERATIONS = {
     'add': (operator.add, 2),
     'sub': (operator.sub, 2),
     'mult': (operator.mul, 2),
-    #'/': (lambda x, y: x / y, 2),
     'sin': (np.sin, 1),
     'cos': (np.cos, 1),
     'exp': (np.exp, 1),
@@ -178,17 +176,20 @@ def get_node_depth(node):
 
 
 def eval_worker(x):
-    loss_fn, x, y, pool, ops, weight_len, ind = x
-    return eval_individual(loss_fn, x, y, pool, ops, ind, weight_len)
+    loss_fn, x, y, pool, ops, weight_len, ind, raise_ = x
+    return eval_individual(loss_fn, x, y, pool, ops, ind, weight_len, raise_)
 
 
-def eval_individual(loss_fn, x, y, pool, ops, ind, weight_num):
+def eval_individual(loss_fn, x, y, pool, ops, ind, weight_num, raise_error = False):
     try:
         variables = {f'x{i}': x[:, i] for i in range(x.shape[1])}
         result = loss_fn(x, y, ind, variables, pool, ops)
         return result
 
     except Exception as e:
+        if raise_error:
+            raise e
+        
         print(f'error: {e}')
         return tuple([float('inf')] * weight_num)
 
@@ -210,7 +211,7 @@ class SymReg:
         operations: dict[str, Callable] = None,
         elite_part=0.1,
         mutate_params: bool = True,
-        loss_weights: tuple[float] = (-1.0, ),
+        loss_weights: tuple[float]|None =  None,
         weight_err_eps=1e-10,
         max_depth: int = 10,
     ):
@@ -242,7 +243,7 @@ class SymReg:
         self.param_num = param_num
         self.init_population = init_population
         self.p_mutation = p_mutation
-        self.loss_weights = loss_weights
+        self.loss_weights = loss_weights or tuple([-1.0]+[weight_err_eps]*loss_component_num)
         self.operations = operations or DEFAULT_OPERATIONS
         self.elite_part = elite_part
         self.mutate_params = mutate_params
@@ -322,6 +323,7 @@ class SymReg:
             variables = self.variables
         else:
             variables = self.hidden_variables
+        overall_depth =  get_node_depth(element)
 
         # change subtree at random
         nodes = collect_nodes(element)
@@ -339,7 +341,7 @@ class SymReg:
                     allowed_depths = [
                         current_depth - 1, current_depth, current_depth + 1
                     ]
-                if current_depth >= self.max_depth:
+                if current_depth >= self.max_depth or overall_depth >= self.max_depth:
                     allowed_depths = allowed_depths[:-1]
                 if len(allowed_depths) == 1:
                     new_depth = allowed_depths[0]
@@ -360,7 +362,7 @@ class SymReg:
                                       mutpb=self.p_mutation)
         try:
             offsping_to_eval = [(self.loss_fn, self.x, self.y, self.pool,
-                                 self.operations, len(self.loss_weights), g)
+                                 self.operations, len(self.loss_weights), g, self.proc_num==0)
                                 for g in offspring]
             core_num = self.proc_num
             if core_num == -1:
@@ -373,7 +375,6 @@ class SymReg:
                 map_func = map
             for ind, eval_result in zip(
                     offspring, map_func(eval_worker, offsping_to_eval)):
-                # print('eval_result', eval_result)
                 ind.fitness.values = eval_result
 
         finally:
@@ -393,7 +394,7 @@ class SymReg:
             log_perf_every: int = -1,
             log_time_every: int = -1):
         time_s = time.time()
-        for e in tqdm(range(epoch_num), leave=False):
+        for e in range(epoch_num):
             self.fit_epoch()
             best = tools.selBest(self.pop, 1)[0]
             err = best.fitness.values
