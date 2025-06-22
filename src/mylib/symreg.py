@@ -31,14 +31,8 @@ DEFAULT_OPERATIONS = {
 
 
 class Node:
-    """
-    This class represents a node in an expression tree
-
-    Tree is a node root with children
-    """
-
     def __init__(self, value, children=None):
-        self.value = value # value is X* or P* 
+        self.value = value 
         self.children = children or []
 
     def is_leaf(self):
@@ -69,13 +63,6 @@ class Node:
 
 
 class Composition:
-    """
-    A composition stores multiple trees
-
-    We use notation:
-        f = g(h(x))
-    """
-
     def __init__(self, children_h, children_g):
 
         self.children_h = children_h
@@ -92,9 +79,6 @@ class Composition:
 
 def evaluate_tree(node, variables: dict[str, np.ndarray],
                   ops: dict[str, Callable]) -> np.ndarray:
-    """
-    Evaluates tree with variables and operations
-    """
     if node.is_leaf():
         if isinstance(node.value, str):  # variable
             return variables[node.value]
@@ -118,17 +102,6 @@ def evaluate_composition(
     g_id: int = 0,
     return_hidden: bool = False
 ) -> np.ndarray | tuple[dict[str, np.ndarray], np.ndarray]:
-    """
-    Evaluates composition
-
-    Args:
-        composition (Composition): composition to eval
-        variables (dict[str, np.ndarray]): dictionary of variables
-        pool (dict[str, np.ndarray | float]): pool of additional parameters
-        ops (dict[str, Callable]): operations
-        g_id (int, optional): index of "g" to eval. Defaults to 0.
-        return_hidden (bool, optional): if True, will return both value and hidden variables from h. Defaults to False.
-    """
     new_vars = {}
     for h_id, h in enumerate(composition.children_h):
         new_vars['h' + str(h_id)] = evaluate_tree(h, variables | pool, ops)
@@ -140,9 +113,6 @@ def evaluate_composition(
 
 
 def collect_nodes(node):
-    """
-    Gathers all the nodes from the tree
-    """
     if not isinstance(node, Node):
         return []
 
@@ -155,16 +125,10 @@ def collect_nodes(node):
 
 
 def init_param():
-    """
-    Utility function to initialize parameters
-    """
     return round(random.uniform(-5, 5), 2)
 
 
 def get_node_depth(node):
-    """
-    Depth of the node
-    """
     d = 0
     buf = []
     buf.extend([(1, n) for n in node.children])
@@ -265,7 +229,6 @@ class SymReg:
 
         toolbox = base.Toolbox()
 
-        # NOTE: multiprocessing doesn't work with lambdas, so we create functions explicitly
         def individual_constructor():
             return creator.Individual(*self.generate_composition(max_depth))
 
@@ -281,8 +244,6 @@ class SymReg:
         toolbox.register("mutate", self.mutate)
         toolbox.register("select", tools.selTournament, tournsize=3)
 
-        #toolbox.register("mate", lambda a, b:
-        #                 (a.copy(), b.copy()))  #
         self.toolbox = toolbox
         self.pop = toolbox.population(n=self.init_population)
 
@@ -299,7 +260,6 @@ class SymReg:
         return h, g
 
     def generate_random_tree(self, max_depth, variables, strict=False):
-        # strict here stands for direct control of the depth
         if max_depth == 0 or (not strict and max_depth >= 1
                               and random.random() < 0.3):
             if random.random() < 0.5:
